@@ -1,6 +1,6 @@
 # Scaffolding a New Project from the Jarvis Template
 
-This guide walks you through creating your own Dynagent-based project from the **autobots-agents-jarvis** template and running the scaffold script to rename the repo and primary domain to your project.
+This guide walks you through creating your own Dynagent-based project from the **autobots-orch-flow-studio** template and running the scaffold script to rename the repo and primary domain to your project.
 
 ## 1. Create Your Repo from the Jarvis Template
 
@@ -8,7 +8,7 @@ Choose one of the following ways to create a new repository from the Jarvis temp
 
 ### Option A: GitHub “Use this template”
 
-1. Open the [autobots-agents-jarvis](https://github.com/your-org/autobots-agents-jarvis) repository on GitHub.
+1. Open the [autobots-orch-flow-studio](https://github.com/your-org/autobots-orch-flow-studio) repository on GitHub.
 2. Click **Use this template** → **Create a new repository**.
 3. Enter your new repository name (e.g. `autobots-kbe-pay` or `my-app`). You can name it with or without the `autobots-` prefix; the scaffold script will normalize it.
 4. Choose visibility and create the repository.
@@ -22,7 +22,7 @@ Choose one of the following ways to create a new repository from the Jarvis temp
 
 1. Clone the template repo:
    ```bash
-   git clone https://github.com/your-org/autobots-agents-jarvis.git my-project
+   git clone https://github.com/your-org/autobots-orch-flow-studio.git my-project
    cd my-project
    ```
 2. Create a new empty repository on GitHub (or your Git host) with the name you want (e.g. `autobots-kbe-pay`).
@@ -32,7 +32,7 @@ Choose one of the following ways to create a new repository from the Jarvis temp
    git push -u origin main
    ```
 
-After this step you should be in the root of a repo that still looks like **autobots-agents-jarvis** (template state). Do **not** run the scaffold script from inside a monorepo that shares a parent with the template; run it only in this new, dedicated clone.
+After this step you should be in the root of a repo that still looks like **autobots-orch-flow-studio** (template state). Do **not** run the scaffold script from inside a monorepo that shares a parent with the template; run it only in this new, dedicated clone.
 
 ---
 
@@ -43,7 +43,7 @@ The scaffold script renames the template to your project and primary domain, rem
 ### Prerequisites
 
 - **Python 3.12+** available on your PATH (the script only uses the standard library).
-- You are in the **root directory** of the cloned template repo (the directory that contains `sbin/` and `src/autobots_agents_jarvis/`).
+- You are in the **root directory** of the cloned template repo (the directory that contains `sbin/` and `src/autobots_orch_flow_studio/`).
 
 ### Basic usage
 
@@ -55,7 +55,7 @@ python3 sbin/scaffold.py <project-name>
 **Project name** must be lowercase with hyphens (e.g. `kbe-pay`, `my-app`). The script will:
 
 - Derive repo/package names (e.g. `autobots-kbe-pay`, `autobots_kbe_pay`).
-- Use the same value as the **primary domain** unless you pass `--primary-domain` (so the “concierge” domain becomes your domain name).
+- Use the same value as the **primary domain** unless you pass `--primary-domain` (so the “orch_flow_studio” domain becomes your domain name).
 
 **Examples:**
 
@@ -81,7 +81,7 @@ python3 sbin/scaffold.py kbe-pay --dry-run
 | Option | Description |
 |--------|-------------|
 | `name` | **(Required)** Project name: lowercase, hyphens only (e.g. `kbe-pay`). |
-| `--primary-domain` | Primary domain name (e.g. `nurture`). Defaults to the project name. This is the domain that replaces “concierge” in code and paths. |
+| `--primary-domain` | Primary domain name (e.g. `nurture`). Defaults to the project name. This is the domain that replaces “orch_flow_studio” in code and paths. |
 | `--display-name` | Human-readable name (e.g. `KBE Pay`). Defaults to a capitalized version of the project name. |
 | `--description` | Short description written into `pyproject.toml`. |
 | `--port` | Default Chainlit port (default: `2337`). |
@@ -91,8 +91,8 @@ python3 sbin/scaffold.py kbe-pay --dry-run
 
 1. **Cleans template artifacts** — Removes `.coverage`, `coverage.xml`, `htmlcov`, `.pytest_cache`, `.ruff_cache`, and `poetry.lock`.
 2. **Removes demo content** — Deletes the Customer Support and Sales domains (source, configs, run scripts, and tests) so only the primary domain remains.
-3. **Applies renames in content** — Replaces `autobots-agents-jarvis` / `autobots_agents_jarvis` with your project names, and `concierge` (and variants) with your primary domain name across text files.
-4. **Renames paths** — Renames the top-level package directory (e.g. `autobots_agents_jarvis` → `autobots_kbe_pay`) and the primary domain directory (e.g. `concierge` → `nurture` in `src`, `agent_configs`, and tests).
+3. **Applies renames in content** — Replaces `autobots-orch-flow-studio` / `autobots_orch_flow_studio` with your project names, and `orch_flow_studio` (and variants) with your primary domain name across text files.
+4. **Renames paths** — Renames the top-level package directory (e.g. `autobots_orch_flow_studio` → `autobots_kbe_pay`) and the primary domain directory (e.g. `orch_flow_studio` → `nurture` in `src`, `agent_configs`, and tests).
 5. **Standalone repo config** — Switches Makefile, `pyproject.toml`, and `.pre-commit-config.yaml` from monorepo mode to standalone (local `.venv`, no parent shared-lib).
 6. **Optional overrides** — If you passed `--description` or `--port`, updates `pyproject.toml`, Makefile, domain settings, and the run script accordingly.
 7. **Self-removal** — Deletes `sbin/scaffold.py` so it is not left in the scaffolded repo.
@@ -114,7 +114,7 @@ Commit the scaffolded state to your new repo:
 ```bash
 git add -A
 git status   # review renames and changes
-git commit -m "Scaffold from autobots-agents-jarvis template"
+git commit -m "Scaffold from autobots-orch-flow-studio template"
 git push
 ```
 

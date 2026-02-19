@@ -1,0 +1,48 @@
+[
+  {
+    "id": "flow_chat_tab",
+    "type": "tab",
+    "label": "Chainlit Chat",
+    "disabled": false
+  },
+  {
+    "id": "http_in_chat",
+    "type": "http in",
+    "z": "flow_chat_tab",
+    "name": "POST /chat",
+    "url": "/chat",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 140,
+    "y": 100,
+    "wires": [["func_build_reply"]]
+  },
+  {
+    "id": "func_build_reply",
+    "type": "function",
+    "z": "flow_chat_tab",
+    "name": "Build reply",
+    "func": "var body = msg.payload || {};\nvar userMessage = (body.message || '').toString();\nvar reply = { reply: 'You said: ' + userMessage };\nmsg.payload = JSON.stringify(reply);\nmsg.headers = msg.headers || {};\nmsg.headers['Content-Type'] = 'application/json';\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 100,
+    "wires": [["http_response_chat"]]
+  },
+  {
+    "id": "http_response_chat",
+    "type": "http response",
+    "z": "flow_chat_tab",
+    "name": "",
+    "statusCode": "200",
+    "responsePayload": "",
+    "headers": [],
+    "x": 580,
+    "y": 100,
+    "wires": []
+  }
+]

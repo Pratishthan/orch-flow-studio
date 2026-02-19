@@ -1,6 +1,6 @@
-# Dockerfile for autobots-agents-jarvis
+# Dockerfile for autobots-orch-flow-studio
 # Multi-stage build with Poetry
-# Build context: autobots-agents-jarvis directory
+# Build context: autobots-orch-flow-studio directory
 # Usage: make docker-build
 # Or: make docker-build-no-cache
 
@@ -31,7 +31,7 @@ RUN poetry install --no-root --only main && \
 FROM python:3.12-slim-bookworm AS runtime
 
 # Build argument for domain selection
-ARG DOMAIN=concierge
+ARG DOMAIN=orch_flow_studio
 
 # Set environment variables for Python optimization
 ENV PYTHONUNBUFFERED=1 \
@@ -72,7 +72,7 @@ USER app
 # Activate virtual environment by adding to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Expose Chainlit port (default concierge port: 2337)
+# Expose Chainlit port (default orch_flow_studio port: 2337)
 EXPOSE 2337
 
 # Health check (port will vary by domain, but defaults to 2337)

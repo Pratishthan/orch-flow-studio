@@ -1,5 +1,5 @@
 # ABOUTME: Docker Compose configuration for local development.
-# ABOUTME: Includes three domain services (concierge, customer-support, sales) with optional Langfuse V3 for observability.
+# ABOUTME: Includes three domain services (orch_flow_studio, customer-support, sales) with optional Langfuse V3 for observability.
 
 # Common environment variables shared across all domain services
 x-common-env: &common-env
@@ -15,17 +15,17 @@ x-common-env: &common-env
   LLM_MODEL: ${LLM_MODEL:-gemini-2.0-flash}
 
 services:
-  concierge-chat:
+  orch_flow_studio-chat:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        DOMAIN: concierge
+        DOMAIN: orch_flow_studio
     ports:
       - "2337:2337"
     environment:
       <<: *common-env
-      DYNAGENT_CONFIG_ROOT_DIR: /app/agent_configs/concierge
+      DYNAGENT_CONFIG_ROOT_DIR: /app/agent_configs/orch_flow_studio
       PORT: 2337
     volumes:
       - ./agent_configs:/app/agent_configs:ro

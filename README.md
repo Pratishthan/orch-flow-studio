@@ -9,7 +9,7 @@ When you are ready to build your own **Jarvis** use case. Head to the [Scaffoldi
 
 This repository demonstrates a **multi-domain architecture** with three independent business domains, each with specialized multi-agent systems:
 
-### 🤖 **Concierge Domain** (General Assistant)
+### 🤖 **Orch Flow Studio Domain** (General Assistant)
 
 - **Welcome Agent** - Routes to joke or weather agents
 - **Joke Agent** - Humor delivery with structured output (batch-enabled)
@@ -43,13 +43,13 @@ This repository demonstrates a **multi-domain architecture** with three independ
 ### Multi-Domain Structure
 
 ```
-autobots-agents-jarvis/
+autobots-orch-flow-studio/
 ├── agent_configs/              # Agent configurations per domain
-│   ├── concierge/              # Concierge domain config
+│   ├── orch_flow_studio/              # Orch Flow Studio domain config
 │   ├── customer-support/       # Customer support domain config
 │   └── sales/                  # Sales domain config
 │
-├── src/autobots_agents_jarvis/
+├── src/autobots_orch_flow_studio/
 │   ├── common/                 # SHARED code across all domains
 │   │   ├── tools/              # Shared validation tools
 │   │   ├── services/           # Shared service patterns
@@ -59,7 +59,7 @@ autobots-agents-jarvis/
 │   │   └── settings.py
 │   │
 │   └── domains/                # DOMAIN-SPECIFIC code
-│       ├── concierge/          # Concierge (jokes, weather)
+│       ├── orch_flow_studio/          # Orch Flow Studio (jokes, weather)
 │       ├── customer_support/   # Customer support implementation
 │       └── sales/              # Sales implementation
 ```
@@ -78,7 +78,7 @@ domains/{name}/
 ### Agent Mesh Architecture
 
 ```
-🤖 CONCIERGE (Port 2337)          🎧 CUSTOMER SUPPORT (Port 1338)     💼 SALES (Port 1339)
+🤖 ORCH_FLOW_STUDIO (Port 2337)          🎧 CUSTOMER SUPPORT (Port 1338)     💼 SALES (Port 1339)
 ┌─────────────────┐            ┌─────────────────┐                ┌─────────────────┐
 │ Welcome Agent   │            │  Coordinator    │                │  Coordinator    │
 │  (Default)      │            │   (Default)     │                │   (Default)     │
@@ -105,7 +105,7 @@ domains/{name}/
 1. **Clone the repository**
 
    ```bash
-   cd autobots-agents-jarvis
+   cd autobots-orch-flow-studio
    ```
 2. **Install dependencies**
 
@@ -138,7 +138,7 @@ make chainlit-all
 
 Then open in browser (ports used by `run_all_domains.sh`):
 
-- 🤖 **Concierge**: http://localhost:2337
+- 🤖 **Orch Flow Studio**: http://localhost:2337
 - 🎧 **Customer Support**: http://localhost:2338
 - 💼 **Sales**: http://localhost:2339
 
@@ -147,9 +147,9 @@ Press `Ctrl+C` to stop all domains.
 #### Option 2: Run Individual Domains
 
 ```bash
-# Run Concierge only (port 2337)
-make chainlit-dev     # Concierge UI at http://localhost:2337
-# OR: ./sbin/run_concierge.sh
+# Run Orch Flow Studio only (port 2337)
+make chainlit-dev     # Orch Flow Studio UI at http://localhost:2337
+# OR: ./sbin/run_orch_flow_studio.sh
 
 # Run Customer Support only (port 1338)
 make chainlit-customer-support
@@ -162,7 +162,7 @@ make chainlit-sales
 
 ## Domain Descriptions
 
-### 🤖 Concierge Domain (Port 2337)
+### 🤖 Orch Flow Studio Domain (Port 2337)
 
 **Purpose**: General-purpose AI assistant for jokes and weather
 
@@ -225,7 +225,7 @@ def validate_phone(phone: str) -> str:
     # ...
 ```
 
-**Location**: `src/autobots_agents_jarvis/common/`
+**Location**: `src/autobots_orch_flow_studio/common/`
 
 - `common/tools/` - Shared validation tools
 - `common/services/` - Shared service patterns
@@ -245,7 +245,7 @@ def create_ticket(runtime: ToolRuntime[None, Dynagent], title: str, description:
 
 **Pattern**:
 
-- Each domain in `src/autobots_agents_jarvis/domains/{name}/`
+- Each domain in `src/autobots_orch_flow_studio/domains/{name}/`
 - Each has: `server.py`, `tools.py`, `services.py`
 - Domains opt-in to shared tools by calling `register_validation_tools()`
 
@@ -253,8 +253,8 @@ def create_ticket(runtime: ToolRuntime[None, Dynagent], title: str, description:
 
 ```python
 # domains/customer_support/server.py
-from autobots_agents_jarvis.common.tools.validation_tools import register_validation_tools
-from autobots_agents_jarvis.domains.customer_support.tools import register_customer_support_tools
+from autobots_orch_flow_studio.common.tools.validation_tools import register_validation_tools
+from autobots_orch_flow_studio.domains.customer_support.tools import register_customer_support_tools
 
 # Register both shared and domain-specific tools
 register_validation_tools()  # ← SHARED (email, phone, URL validators)
@@ -265,10 +265,10 @@ register_customer_support_tools()  # ← DOMAIN-SPECIFIC (tickets, KB)
 
 Three agents across domains support batch processing for parallel request handling:
 
-### Concierge Domain - `joke_agent`
+### Orch Flow Studio Domain - `joke_agent`
 
 ```python
-from autobots_agents_jarvis.domains.concierge.concierge_batch import concierge_batch
+from autobots_orch_flow_studio.domains.orch_flow_studio.orch_flow_studio_batch import orch_flow_studio_batch
 
 prompts = [
     "Tell me a programming joke",
@@ -276,7 +276,7 @@ prompts = [
     "Give me a knock-knock joke",
 ]
 
-result = concierge_batch("joke_agent", prompts, user_id="my_user")
+result = orch_flow_studio_batch("joke_agent", prompts, user_id="my_user")
 
 for record in result.results:
     if record.success:
@@ -358,7 +358,7 @@ make pre-commit
 
 ### Agent Configuration
 
-Agents are configured per domain under `agent_configs/{domain}/`. For example, Concierge uses `agent_configs/concierge/agents.yaml`:
+Agents are configured per domain under `agent_configs/{domain}/`. For example, Orch Flow Studio uses `agent_configs/orch_flow_studio/agents.yaml`:
 
 ```yaml
 agents:
@@ -377,7 +377,7 @@ agents:
 
 See `.env.example` for all available configuration options:
 
-- `DYNAGENT_CONFIG_ROOT_DIR` - Path to agent configs for the domain (e.g. `agent_configs/concierge`, `agent_configs/customer-support`, `agent_configs/sales`)
+- `DYNAGENT_CONFIG_ROOT_DIR` - Path to agent configs for the domain (e.g. `agent_configs/orch_flow_studio`, `agent_configs/customer-support`, `agent_configs/sales`)
 - `GOOGLE_API_KEY` - Required for Gemini LLM
 - `LANGFUSE_*` - Optional observability configuration
 - `OAUTH_GITHUB_*` - Optional GitHub OAuth for authentication
@@ -385,8 +385,8 @@ See `.env.example` for all available configuration options:
 ## Project Structure
 
 ```
-autobots-agents-jarvis/
-├── src/autobots_agents_jarvis/
+autobots-orch-flow-studio/
+├── src/autobots_orch_flow_studio/
 │   ├── common/                      # Shared across all domains
 │   │   ├── tools/                   # e.g. validation_tools.py
 │   │   ├── services/
@@ -394,11 +394,11 @@ autobots-agents-jarvis/
 │   ├── configs/
 │   │   └── settings.py              # Shared Pydantic settings
 │   └── domains/
-│       ├── concierge/
+│       ├── orch_flow_studio/
 │       │   ├── server.py            # Chainlit entry (port 2337)
 │       │   ├── tools.py             # tell_joke, get_weather, etc.
 │       │   ├── services.py          # Joke and weather services
-│       │   ├── concierge_batch.py   # Batch processing for joke_agent
+│       │   ├── orch_flow_studio_batch.py   # Batch processing for joke_agent
 │       │   └── settings.py          # Domain-specific settings
 │       ├── customer_support/
 │       │   ├── server.py            # Chainlit entry (port 1338)
@@ -409,17 +409,17 @@ autobots-agents-jarvis/
 │           ├── tools.py
 │           └── services.py
 ├── agent_configs/
-│   ├── concierge/
+│   ├── orch_flow_studio/
 │   │   ├── agents.yaml
 │   │   ├── prompts/                 # 00-welcome.md, 01-joke.md, 02-weather.md
 │   │   └── schemas/                 # joke-output.json, weather-output.json
 │   ├── customer-support/
 │   └── sales/
 ├── tests/
-│   ├── unit/                        # Unit tests (e.g. tests/unit/domains/concierge/)
+│   ├── unit/                        # Unit tests (e.g. tests/unit/domains/orch_flow_studio/)
 │   ├── integration/                 # Integration tests
 │   └── sanity/                      # Sanity / canary tests
-├── sbin/                            # Run scripts (run_concierge.sh, run_all_domains.sh, etc.)
+├── sbin/                            # Run scripts (run_orch_flow_studio.sh, run_all_domains.sh, etc.)
 ├── pyproject.toml
 └── README.md
 ```
@@ -428,11 +428,11 @@ autobots-agents-jarvis/
 
 ### Adding a New Agent
 
-1. **Define the agent** in `agent_configs/{domain}/agents.yaml` (e.g. `agent_configs/concierge/agents.yaml`)
+1. **Define the agent** in `agent_configs/{domain}/agents.yaml` (e.g. `agent_configs/orch_flow_studio/agents.yaml`)
 2. **Create prompt** in `agent_configs/{domain}/prompts/`
 3. **Add output schema** (if needed) in `agent_configs/{domain}/schemas/`
-4. **Implement tools** in `src/autobots_agents_jarvis/domains/{domain}/tools.py`
-5. **Register tools** in that domain's `register_*_tools()` (e.g. `register_concierge_tools()`)
+4. **Implement tools** in `src/autobots_orch_flow_studio/domains/{domain}/tools.py`
+5. **Register tools** in that domain's `register_*_tools()` (e.g. `register_orch_flow_studio_tools()`)
 6. **Add tests** in `tests/unit/domains/{domain}/` or `tests/integration/domains/{domain}/`
 
 ### Adding a New Tool
@@ -448,7 +448,7 @@ def my_new_tool(runtime: ToolRuntime[None, Dynagent], param: str) -> str:
     # Your implementation here
     return "Result"
 
-# Then register in that domain's register_*_tools() (e.g. register_concierge_tools())
+# Then register in that domain's register_*_tools() (e.g. register_orch_flow_studio_tools())
 ```
 
 ## Docker Support
@@ -477,10 +477,10 @@ make install-dev
 
 ### Agent not found errors
 
-Ensure `DYNAGENT_CONFIG_ROOT_DIR` points to the correct domain config (e.g. for Concierge):
+Ensure `DYNAGENT_CONFIG_ROOT_DIR` points to the correct domain config (e.g. for Orch Flow Studio):
 
 ```bash
-export DYNAGENT_CONFIG_ROOT_DIR=agent_configs/concierge
+export DYNAGENT_CONFIG_ROOT_DIR=agent_configs/orch_flow_studio
 ```
 
 ### Missing Google API key

@@ -3,26 +3,26 @@
 from collections.abc import Generator
 
 
-def concierge_tools_registered() -> Generator[None, None, None]:
-    """Register Concierge tools for testing; reset after use.
+def orch_flow_studio_tools_registered() -> Generator[None, None, None]:
+    """Register Orch Flow Studio tools for testing; reset after use.
 
     Usage in conftest.py:
-        from tests.helpers import concierge_tools_registered
+        from tests.helpers import orch_flow_studio_tools_registered
 
         @pytest.fixture
-        def concierge_registered():
-            yield from concierge_tools_registered()
+        def orch_flow_studio_registered():
+            yield from orch_flow_studio_tools_registered()
     """
     from autobots_devtools_shared_lib.dynagent import AgentMeta
     from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
         _reset_usecase_tools,
     )
 
-    from autobots_agents_jarvis.domains.concierge.tools import register_concierge_tools
+    from autobots_orch_flow_studio.domains.orch_flow_studio.tools import register_orch_flow_studio_tools
 
     _reset_usecase_tools()
     AgentMeta.reset()
-    register_concierge_tools()
+    register_orch_flow_studio_tools()
     yield
     _reset_usecase_tools()
     AgentMeta.reset()

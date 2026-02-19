@@ -9,7 +9,7 @@ Jarvis is a demonstration app built on the **Dynagent** framework (`autobots-dev
 
 | Feature | Description |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Multi-domain architecture** | Three domains (Concierge, Customer Support, Sales) run simultaneously on different ports. Clean separation of domain-specific and shared code. |
+| **Multi-domain architecture** | Three domains (Orch Flow Studio, Customer Support, Sales) run simultaneously on different ports. Clean separation of domain-specific and shared code. |
 | **Agent mesh** | Coordinator agents route to specialists. Handoff between agents within a domain. Default agent per domain for welcome/entry. |
 | **Structured outputs** | JSON schemas per agent for type-safe responses. Batch-enabled agents return consistent structures. |
 | **Shared + domain code** | `common/` for validation and utilities; `domains/{name}/` for server, tools, and services. Domains opt in to shared tools. |
@@ -24,15 +24,15 @@ Jarvis is a demonstration app built on the **Dynagent** framework (`autobots-dev
 | ------ | ----------- |
 | **[Scaffolding](docs/user-manuals/scaffolding.md)** | Step-by-step guide to build your own Jarvis-style use case. |
 | **[Setup](#setup)** | Prerequisites, install, and environment configuration. |
-| **[Run domains](#running-domains)** | Run all domains at once or individually. Open Concierge, Customer Support, or Sales in the browser. |
+| **[Run domains](#running-domains)** | Run all domains at once or individually. Open Orch Flow Studio, Customer Support, or Sales in the browser. |
 
 ## How-to guides
 
 | Guide | Description |
 | ------ | ----------- |
 | **[Setup](#setup)** | Python 3.12+, API keys, clone, install, `.env` configuration. |
-| **[Running domains](#running-domains)** | `make chainlit-all` or run Concierge (2337), Customer Support (1338), Sales (1339) separately. |
-| **[Domain descriptions](#domain-descriptions)** | What each domain does: agents, tools, mock data (Concierge, Customer Support, Sales). |
+| **[Running domains](#running-domains)** | `make chainlit-all` or run Orch Flow Studio (2337), Customer Support (1338), Sales (1339) separately. |
+| **[Domain descriptions](#domain-descriptions)** | What each domain does: agents, tools, mock data (Orch Flow Studio, Customer Support, Sales). |
 | **[Shared vs domain code](#shared-vs-domain-specific-code-pattern)** | When to use `common/` vs `domains/{name}/`. Registration pattern for shared and domain tools. |
 | **[Batch processing](#batch-processing)** | Use `batch_invoker` or domain batch helpers for joke, ticket, and lead agents. |
 | **[Configuration](#configuration)** | Agent YAML, prompts, schemas; environment variables (e.g. `DYNAGENT_CONFIG_ROOT_DIR`, API keys). |
@@ -63,7 +63,7 @@ Jarvis is a demonstration app built on the **Dynagent** framework (`autobots-dev
 2. **Configure environment:**
 
    ```bash
-   cd autobots-agents-jarvis
+   cd autobots-orch-flow-studio
    cp .env.example .env
    # Edit .env: GOOGLE_API_KEY or ANTHROPIC_API_KEY
    ```
@@ -79,7 +79,7 @@ make chainlit-all
 
 Then open:
 
-- **Concierge:** http://localhost:2337
+- **Orch Flow Studio:** http://localhost:2337
 - **Customer Support:** http://localhost:1338
 - **Sales:** http://localhost:1339
 
@@ -88,7 +88,7 @@ Use `Ctrl+C` to stop.
 ### Run one domain
 
 ```bash
-make chainlit-dev                 # Concierge (2337)
+make chainlit-dev                 # Orch Flow Studio (2337)
 make chainlit-customer-support    # Customer Support (1338)
 make chainlit-sales               # Sales (1339)
 ```
@@ -98,16 +98,16 @@ make chainlit-sales               # Sales (1339)
 ### Multi-domain structure
 
 ```
-autobots-agents-jarvis/
+autobots-orch-flow-studio/
 ├── agent_configs/              # Per domain
-│   ├── concierge/
+│   ├── orch_flow_studio/
 │   ├── customer-support/
 │   └── sales/
-├── src/autobots_agents_jarvis/
+├── src/autobots_orch_flow_studio/
 │   ├── common/                 # Shared: tools, services, utils
 │   ├── configs/
 │   └── domains/                # Per domain: server, tools, services
-│       ├── concierge/
+│       ├── orch_flow_studio/
 │       ├── customer_support/
 │       └── sales/
 ```
@@ -126,7 +126,7 @@ domains/{name}/
 ### Agent mesh
 
 ```
-Concierge (2337)              Customer Support (1338)     Sales (1339)
+Orch Flow Studio (2337)              Customer Support (1338)     Sales (1339)
 ┌─────────────────┐           ┌─────────────────┐          ┌─────────────────┐
 │ Welcome (default)│          │ Coordinator     │          │ Coordinator     │
 └────────┬────────┘           └────────┬────────┘         └────────┬────────┘
@@ -138,7 +138,7 @@ Concierge (2337)              Customer Support (1338)     Sales (1339)
 
 ## Domain descriptions
 
-### Concierge (port 2337)
+### Orch Flow Studio (port 2337)
 
 **Purpose:** General assistant (jokes, weather).
 **Agents:** `welcome_agent` (default), `joke_agent` (batch), `weather_agent`.
@@ -183,8 +183,8 @@ def create_ticket(runtime: ToolRuntime[None, Dynagent], title: str, description:
 
 ```python
 # domains/customer_support/server.py
-from autobots_agents_jarvis.common.tools.validation_tools import register_validation_tools
-from autobots_agents_jarvis.domains.customer_support.tools import register_customer_support_tools
+from autobots_orch_flow_studio.common.tools.validation_tools import register_validation_tools
+from autobots_orch_flow_studio.domains.customer_support.tools import register_customer_support_tools
 
 register_validation_tools()
 register_customer_support_tools()
@@ -192,12 +192,12 @@ register_customer_support_tools()
 
 ## Batch processing
 
-**Concierge — joke_agent:**
+**Orch Flow Studio — joke_agent:**
 
 ```python
-from autobots_agents_jarvis.domains.concierge.concierge_batch import concierge_batch
+from autobots_orch_flow_studio.domains.orch_flow_studio.orch_flow_studio_batch import orch_flow_studio_batch
 
-result = concierge_batch("joke_agent", ["Tell me a programming joke", "Dad joke?"], user_id="my_user")
+result = orch_flow_studio_batch("joke_agent", ["Tell me a programming joke", "Dad joke?"], user_id="my_user")
 ```
 
 **Customer Support / Sales — framework API:**
@@ -215,7 +215,7 @@ result = batch_invoker("lead_qualification_agent", ["Qualify lead: Acme Corp, $1
 
 **Environment:** See `.env.example`. Key variables:
 
-- `DYNAGENT_CONFIG_ROOT_DIR` — e.g. `agent_configs/concierge`, `agent_configs/customer-support`, `agent_configs/sales`
+- `DYNAGENT_CONFIG_ROOT_DIR` — e.g. `agent_configs/orch_flow_studio`, `agent_configs/customer-support`, `agent_configs/sales`
 - `GOOGLE_API_KEY` — for Gemini
 - `LANGFUSE_*`, `OAUTH_GITHUB_*` — optional
 
@@ -259,16 +259,16 @@ make pre-commit
 ## Project structure
 
 ```
-autobots-agents-jarvis/
-├── src/autobots_agents_jarvis/
+autobots-orch-flow-studio/
+├── src/autobots_orch_flow_studio/
 │   ├── common/              # Shared tools, services, utils
 │   ├── configs/
 │   └── domains/
-│       ├── concierge/       # server, tools, services, batch
+│       ├── orch_flow_studio/       # server, tools, services, batch
 │       ├── customer_support/
 │       └── sales/
 ├── agent_configs/
-│   ├── concierge/           # agents.yaml, prompts/, schemas/
+│   ├── orch_flow_studio/           # agents.yaml, prompts/, schemas/
 │   ├── customer-support/
 │   └── sales/
 ├── tests/unit, integration, sanity
@@ -289,7 +289,7 @@ make docker-up   # docker-compose
 
 **Import errors:** Install in dev mode from workspace root: `make install-dev`.
 
-**Agent not found:** Set `DYNAGENT_CONFIG_ROOT_DIR` to the domain config (e.g. `agent_configs/concierge`).
+**Agent not found:** Set `DYNAGENT_CONFIG_ROOT_DIR` to the domain config (e.g. `agent_configs/orch_flow_studio`).
 
 **Missing API key:** Set `GOOGLE_API_KEY` (or `ANTHROPIC_API_KEY`) in `.env`.
 
@@ -297,7 +297,7 @@ make docker-up   # docker-compose
 
 | Domain | Port | Default agent | Batch agent | Highlights |
 |--------|------|---------------|-------------|------------|
-| Concierge | 2337 | welcome_agent | joke_agent | Jokes (4 categories), Weather (6 cities) |
+| Orch Flow Studio | 2337 | welcome_agent | joke_agent | Jokes (4 categories), Weather (6 cities) |
 | Customer Support | 1338 | support_coordinator | ticket_agent | Tickets, KB (4 articles), shared validators |
 | Sales | 1339 | sales_coordinator | lead_qualification_agent | Lead scoring, catalog (6 products, 3 tiers) |
 

@@ -1,6 +1,6 @@
 # ABOUTME: Unit tests for common validation tools.
 
-from autobots_agents_jarvis.common.tools.validation_tools import (
+from autobots_orch_flow_studio.common.tools.validation_tools import (
     validate_email,
     validate_phone,
     validate_url,

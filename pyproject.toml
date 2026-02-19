@@ -1,5 +1,5 @@
 [project]
-name = "autobots-agents-jarvis"
+name = "autobots-orch-flow-studio"
 version = "0.1.0"
 description = "Jarvis - Multi-agent AI Assistant Demo"
 readme = "README.md"
@@ -31,17 +31,17 @@ dev = [
 ]
 
 [tool.poetry]
-name = "autobots-agents-jarvis"
+name = "autobots-orch-flow-studio"
 version = "0.1.0"
 description = "Jarvis - Multi-agent AI Assistant Demo"
 authors = ["PK <pro.kamath@gmail.com>"]
 packages = [
-    { include = "autobots_agents_jarvis", from = "src" }
+    { include = "autobots_orch_flow_studio", from = "src" }
 ]
 
 [tool.poetry.dependencies]
 # Local path dependency (Poetry-specific)
-autobots-devtools-shared-lib = {path = "../autobots-devtools-shared-lib", develop = true}  # MONOREPO
+# autobots-devtools-shared-lib = {path = "../autobots-devtools-shared-lib", develop = true}  # MONOREPO
 
 
 [tool.ruff]
@@ -95,7 +95,7 @@ addopts = [
     "--tb=short",
     "--strict-markers",
     "--strict-config",
-    "--cov=src/autobots_agents_jarvis",
+    "--cov=src/autobots_orch_flow_studio",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -113,12 +113,12 @@ pythonVersion = "3.12"
 typeCheckingMode = "basic"
 include = ["src", "tests"]
 exclude = ["**/__pycache__", ".venv"]
-venvPath = ".."  # MONOREPO
-venv = ".venv"  # MONOREPO
-extraPaths = ["src", "../autobots-devtools-shared-lib/src"]  # MONOREPO
-# venvPath = "."  # STANDALONE
-# venv = ".venv"  # STANDALONE
-# extraPaths = ["src"]  # STANDALONE
+# venvPath = ".."  # MONOREPO
+# venv = ".venv"  # MONOREPO
+# extraPaths = ["src", "../autobots-devtools-shared-lib/src"]  # MONOREPO
+venvPath = "."  # STANDALONE
+venv = ".venv"  # STANDALONE
+extraPaths = ["src"]  # STANDALONE
 
 
 # Coverage configuration

@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-hooks test test-cov test-fast test-one lint format check-format type-check clean all-checks build publish update-deps chainlit-dev chainlit-customer-support chainlit-sales chainlit-all sanity file-server docker-build docker-build-no-cache docker-run docker-run-detached docker-up docker-down docker-logs docker-logs-compose docker-shell docker-stop docker-ps docker-restart docker-clean docker-remove docker-tag docker-push docker-pull docker-deploy docker-size
+.PHONY: help install install-dev install-hooks test test-cov test-fast test-one lint format check-format type-check clean all-checks build publish update-deps chainlit-dev chainlit-customer-support chainlit-sales chainlit-all node-red sanity file-server docker-build docker-build-no-cache docker-run docker-run-detached docker-up docker-down docker-logs docker-logs-compose docker-shell docker-stop docker-ps docker-restart docker-clean docker-remove docker-tag docker-push docker-pull docker-deploy docker-size
 
 # Default target
 help:
@@ -20,10 +20,11 @@ help:
 	@echo "  make build            - Build the package"
 	@echo "  make publish          - Publish package to PyPI"
 	@echo "  make update-deps      - Update dependencies"
-	@echo "  make chainlit-dev     - Run Concierge Chainlit UI (port 2337)"
+	@echo "  make chainlit-dev     - Run Orch Flow Studio Chainlit UI (port 2337)"
 	@echo "  make chainlit-customer-support - Run Customer Support UI (port 1338)"
 	@echo "  make chainlit-sales   - Run Sales UI (port 1339)"
 	@echo "  make chainlit-all     - Run all domains simultaneously"
+	@echo "  make node-red         - Start Node-RED with flows from src/node_red_flows (port 1880)"
 	@echo ""
 	@echo "Docker commands:"
 	@echo "  make docker-build     - Build Docker image"
@@ -47,8 +48,8 @@ help:
 	@echo "  make docker-size      - Show image size"
 
 # Use system/global poetry and tools from parent venv
-VENV = ../.venv# MONOREPO
-# VENV = .venv# STANDALONE
+# VENV = ../.venv# MONOREPO
+VENV = .venv# STANDALONE
 PYTHON = $(VENV)/bin/python
 POETRY = poetry
 PRE_COMMIT = $(VENV)/bin/pre-commit
@@ -58,18 +59,22 @@ PYRIGHT = $(VENV)/bin/pyright
 CHAINLIT = $(VENV)/bin/chainlit
 
 # Docker configuration
-DOCKER_IMAGE_NAME = autobots-agents-jarvis
+DOCKER_IMAGE_NAME = autobots-orch-flow-studio
 DOCKER_IMAGE_TAG = latest
 DOCKER_REGISTRY = # Set this to your registry (e.g., docker.io/username)
-DOCKER_CONTAINER_NAME = autobots-agents-jarvis
+DOCKER_CONTAINER_NAME = autobots-orch-flow-studio
 
 # Chainlit configuration
 CHAINLIT_PORT = 2337
-CHAINLIT_APP = src/autobots_agents_jarvis/domains/concierge/server.py
+CHAINLIT_APP = src/autobots_orch_flow_studio/domains/orch_flow_studio/server.py
 CHAINLIT_CUSTOMER_SUPPORT_PORT = 1338
-CHAINLIT_CUSTOMER_SUPPORT_APP = src/autobots_agents_jarvis/domains/customer_support/server.py
+CHAINLIT_CUSTOMER_SUPPORT_APP = src/autobots_orch_flow_studio/domains/customer_support/server.py
 CHAINLIT_SALES_PORT = 1339
-CHAINLIT_SALES_APP = src/autobots_agents_jarvis/domains/sales/server.py
+CHAINLIT_SALES_APP = src/autobots_orch_flow_studio/domains/sales/server.py
+
+# Node-RED configuration (flows from src/node_red_flows)
+NODE_RED_PORT = 1880
+NODE_RED_USER_DIR = src/node_red_flows
 
 # Install project dependencies
 install:
@@ -161,9 +166,9 @@ export-requirements:
 	$(POETRY) export -f requirements.txt --output requirements.txt --without-hashes
 	$(POETRY) export -f requirements.txt --output requirements-dev.txt --with dev --without-hashes
 
-# Run Concierge Chainlit UI in development mode
+# Run Orch Flow Studio Chainlit UI in development mode
 chainlit-dev:
-	DYNAGENT_CONFIG_ROOT_DIR=agent_configs/concierge $(CHAINLIT) run $(CHAINLIT_APP) --port $(CHAINLIT_PORT) --host 127.0.0.1
+	DYNAGENT_CONFIG_ROOT_DIR=agent_configs/orch_flow_studio $(CHAINLIT) run $(CHAINLIT_APP) --port $(CHAINLIT_PORT) --host 127.0.0.1
 
 # Run Customer Support Chainlit UI
 chainlit-customer-support:
@@ -176,6 +181,10 @@ chainlit-sales:
 # Run all domains simultaneously
 chainlit-all:
 	./sbin/run_all_domains.sh
+
+# Start Node-RED with flows from src/node_red_flows (port 1880)
+node-red:
+	npx node-red -u $(NODE_RED_USER_DIR) --port $(NODE_RED_PORT)
 
 # Run sanity tests
 sanity:

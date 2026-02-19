@@ -1,4 +1,4 @@
-# ABOUTME: Pytest fixtures and configuration for autobots-agents-jarvis tests.
+# ABOUTME: Pytest fixtures and configuration for autobots-orch-flow-studio tests.
 # ABOUTME: Provides shared fixtures for settings and test utilities.
 
 import os
@@ -7,18 +7,18 @@ from pathlib import Path
 
 import pytest
 
-from autobots_agents_jarvis.configs.settings import AppSettings
+from autobots_orch_flow_studio.configs.settings import AppSettings
 
-_CONCIERGE_CONFIG_CANDIDATES = [
-    Path("agent_configs/concierge"),
-    Path("autobots-agents-jarvis/agent_configs/concierge"),
-    Path("../autobots-agents-jarvis/agent_configs/concierge"),
-    Path(__file__).parent.parent / "agent_configs" / "concierge",
+_ORCH_FLOW_STUDIO_CONFIG_CANDIDATES = [
+    Path("agent_configs/orch_flow_studio"),
+    Path("autobots-orch-flow-studio/agent_configs/orch_flow_studio"),
+    Path("../autobots-orch-flow-studio/agent_configs/orch_flow_studio"),
+    Path(__file__).parent.parent / "agent_configs" / "orch_flow_studio",
 ]
-_CONCIERGE_CONFIG_DIR: Path | None = None
-for _c in _CONCIERGE_CONFIG_CANDIDATES:
+_ORCH_FLOW_STUDIO_CONFIG_DIR: Path | None = None
+for _c in _ORCH_FLOW_STUDIO_CONFIG_CANDIDATES:
     if (_c / "agents.yaml").exists():
-        _CONCIERGE_CONFIG_DIR = _c
+        _ORCH_FLOW_STUDIO_CONFIG_DIR = _c
         break
 
 
@@ -36,7 +36,7 @@ requires_google_api = pytest.mark.skipif(
 
 @pytest.fixture(autouse=True)
 def _dynagent_env(monkeypatch):
-    """Reset agent-config cache and point env vars at the real concierge config."""
+    """Reset agent-config cache and point env vars at the real orch_flow_studio config."""
     from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import _reset_agent_config
 
     _reset_agent_config()
@@ -45,9 +45,9 @@ def _dynagent_env(monkeypatch):
 
     settings_module._settings = None
 
-    if _CONCIERGE_CONFIG_DIR is not None:
-        monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(_CONCIERGE_CONFIG_DIR))
-        monkeypatch.setenv("SCHEMA_BASE", str(_CONCIERGE_CONFIG_DIR / "schemas"))
+    if _ORCH_FLOW_STUDIO_CONFIG_DIR is not None:
+        monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(_ORCH_FLOW_STUDIO_CONFIG_DIR))
+        monkeypatch.setenv("SCHEMA_BASE", str(_ORCH_FLOW_STUDIO_CONFIG_DIR / "schemas"))
     yield
     _reset_agent_config()
     # Reset settings after test
