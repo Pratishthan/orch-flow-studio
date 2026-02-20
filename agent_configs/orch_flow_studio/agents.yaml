@@ -13,94 +13,90 @@ agents:
   #   batch_enabled: true
   #   max_concurrency: 2
 
-  processing_unit_oas_generator:
-    prompt: "processing_unit_oas_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: false
+  # processing_unit_oas_generator:
+  #   prompt: "processing_unit_oas_generator"
+  #   tools:
+  #     - read_file_tool
+  #     - write_file_tool
+  #   batch_enabled: false
 
-  processing_unit_code_generator:
-    prompt: "processing_unit_oas_generator"
-    output_schema: "node-kg-schema-spec.json"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # processing_unit_code_generator:
+  #   prompt: "processing_unit_oas_generator"
+  #   output_schema: "node-kg-schema-spec.json"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
 
-  flow_oas_generator:
-    prompt: "flow_oas_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true 
+  # flow_oas_generator:
+  #   prompt: "flow_oas_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true 
 
-  flow_code_generator:
-    prompt: "flow_code_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # flow_code_generator:
+  #   prompt: "flow_code_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
 
   model_oas_generator:
-    prompt: "model_oas_generator",
-    output_schema: "model-oas-schema-spec.json"
+    prompt: "model_oas_generator"
+    output_schema: "model_oas_spec.json"
     tools:
-      - get_context
       - read_file_tool
       - write_file_tool
-      - list_files_tool
     batch_enabled: true
 
-  model_code_generator:
-    prompt: "model_code_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # model_code_generator:
+  #   prompt: "model_code_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
 
-  sync_oas_generator:
-    prompt: "sync_oas_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # sync_oas_generator:
+  #   prompt: "sync_oas_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
   
-  sync_code_generator:
-    prompt: "sync_code_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # sync_code_generator:
+  #   prompt: "sync_code_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
 
-  async_oas_generator:
-    prompt: "async_oas_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # async_oas_generator:
+  #   prompt: "async_oas_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
 
-  async_code_generator:
-    prompt: "async_code_generator"
-    tools:
-      - get_context
-      - read_file_tool
-      - write_file_tool
-      - list_files_tool
-    batch_enabled: true
+  # async_code_generator:
+  #   prompt: "async_code_generator"
+  #   tools:
+  #     - get_context
+  #     - read_file_tool
+  #     - write_file_tool
+  #     - list_files_tool
+  #   batch_enabled: true
