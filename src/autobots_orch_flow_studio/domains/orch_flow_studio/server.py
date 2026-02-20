@@ -30,6 +30,14 @@ from autobots_orch_flow_studio.domains.orch_flow_studio.tools import register_or
 # Load environment variables from .env file
 load_dotenv()
 
+# Allow more WebSocket packets per payload to avoid "Too many packets in payload" (engineio)
+try:
+    import engineio.payload as _eio_payload
+
+    _eio_payload.Payload.max_decode_packets = 256
+except Exception:  # noqa: S110
+    pass
+
 logger = logging.getLogger(__name__)
 
 # Ensure agent config is set when not provided (e.g. run from IDE)
@@ -48,33 +56,50 @@ NODE_RED_URL = os.environ.get("NODE_RED_URL", "http://localhost:1880").rstrip("/
 FLOWS_API_URL = f"{NODE_RED_URL}/flows"
 FLOW_EXT = ".json"
 
-# Folder for flow JSON files (save, load, list all use this folder when set)
-# Set NODE_RED_FLOW_FOLDER to a directory path; flows save there, browse lists it, load uses it.
-_flow_folder_raw = os.environ.get("NODE_RED_FLOW_FOLDER", "").strip()
-_flow_folder: str | None = str(Path(_flow_folder_raw).resolve()) if _flow_folder_raw else None
+# Subfolder under the data folder where designer flow JSON files are stored (save, load, list, clear).
+DESIGNER_FLOWS_SUBFOLDER = "designer_flows"
 
-# Default flow file path: NODE_RED_FLOW_PATH env, or {NODE_RED_FLOW_FOLDER}/saved_flows.json, or built-in default
+# Folder for flow JSON files (save, load, list all use designer_flows under this when set)
+# Set NODE_RED_FLOW_FOLDER to a directory path; flows save under {path}/designer_flows.
+# If unset, default to workspace "data" directory when it exists (e.g. orch-ai-studio/data).
+_flow_folder_raw = os.environ.get("NODE_RED_FLOW_FOLDER", "").strip()
+_flow_folder: str | None
+if _flow_folder_raw:
+    _flow_folder = str(Path(_flow_folder_raw).resolve())
+else:
+    _workspace_data = Path(__file__).resolve().parents[5] / "data"
+    _flow_folder = str(_workspace_data) if _workspace_data.is_dir() else None
+
+# Default flow file path: NODE_RED_FLOW_PATH env, or {NODE_RED_FLOW_FOLDER}/designer_flows/saved_flows.json, or built-in default
 NODE_RED_FLOW_PATH: str
 if os.environ.get("NODE_RED_FLOW_PATH", "").strip():
     NODE_RED_FLOW_PATH = str(Path(os.environ.get("NODE_RED_FLOW_PATH", "").strip()).resolve())
 elif _flow_folder:
-    NODE_RED_FLOW_PATH = str(Path(_flow_folder) / "saved_flows.json")
+    NODE_RED_FLOW_PATH = str(
+        Path(_flow_folder).resolve() / DESIGNER_FLOWS_SUBFOLDER / "saved_flows.json"
+    )
 else:
     NODE_RED_FLOW_PATH = str(
         Path(__file__).resolve().parent.parent / "node_red_flows" / "saved_flows.json"
     )
 
 
-def _get_flow_folder() -> str | None:
-    """Return configured flow folder path if NODE_RED_FLOW_FOLDER is set, else None."""
-    return _flow_folder if _flow_folder else None
-
-
-def _get_flow_directory() -> str:
-    """Return the directory containing flow JSON files (NODE_RED_FLOW_FOLDER or dirname of NODE_RED_FLOW_PATH)."""
+def _get_base_flow_folder() -> str:
+    """Return the base data folder (parent of designer_flows)."""
     if _flow_folder:
         return str(Path(_flow_folder).resolve())
     return str(Path(NODE_RED_FLOW_PATH).resolve().parent)
+
+
+def _get_flow_directory() -> str:
+    """Return the directory containing flow JSON files: {base}/designer_flows."""
+    base = _get_base_flow_folder()
+    return str(Path(base) / DESIGNER_FLOWS_SUBFOLDER)
+
+
+def _get_flow_folder() -> str | None:
+    """Return configured flow folder path if NODE_RED_FLOW_FOLDER is set, else None."""
+    return _flow_folder if _flow_folder else None
 
 
 # Reusable HTTP client for Node-RED API (connection pooling for faster loads)
@@ -170,7 +195,7 @@ async def _load_flows_then_send(flows, source_label: str, save_path: str | None 
 
 
 def _flow_tool_actions_choice():
-    """Initial choice: Working on new, Working on existing."""
+    """Initial choice: Working on new, Working on existing, Clear."""
     return [
         cl.Action(
             name="flow_working_on_new",
@@ -183,6 +208,12 @@ def _flow_tool_actions_choice():
             label="Working on existing",
             payload={"action": "existing"},
             tooltip="Load and work on an existing flow",
+        ),
+        cl.Action(
+            name="flow_clear",
+            label="Clear",
+            payload={"action": "clear"},
+            tooltip="Delete all flow JSON files in the designer flows folder",
         ),
     ]
 
@@ -334,14 +365,160 @@ I help you design, edit, and manage Node-RED flows using natural language. You c
     )
 
 
+def _first_flow_file_path(message: cl.Message) -> str | None:
+    """Return the path of the first attached file that looks like a flow JSON, or any first file."""
+    result = _first_flow_file_path_and_name(message)
+    return result[0] if result else None
+
+
+def _first_flow_file_path_and_name(message: cl.Message) -> tuple[str, str] | None:
+    """Return (path, original_filename) for the first attached flow file. Uses element name as filename."""
+    elements = getattr(message, "elements", None) or []
+    flow_candidate: tuple[str, str] | None = None
+    for el in elements:
+        path = getattr(el, "path", None)
+        if not path or not Path(path).is_file():
+            continue
+        name = (getattr(el, "name", None) or "").strip() or Path(path).name
+        name_lower = name.lower()
+        path_lower = path.lower()
+        is_flow = name_lower.endswith(FLOW_EXT) or path_lower.endswith(FLOW_EXT)
+        if is_flow:
+            return (path, name)
+        if flow_candidate is None:
+            flow_candidate = (path, name)
+    return flow_candidate
+
+
+def _sanitize_flow_filename(name: str) -> str:
+    """Sanitize user input as a flow filename (no path, safe characters, .json suffix)."""
+    name = (name or "").strip()
+    if not name:
+        return "unnamed_flow"
+    # Remove path components and keep only safe characters
+    base = "".join(c if c.isalnum() or c in "._-" else "_" for c in Path(name).name)
+    if not base:
+        base = "unnamed_flow"
+    return f"{base}.json" if not base.lower().endswith(FLOW_EXT) else base
+
+
+async def _handle_pending_save_flow(message: cl.Message) -> bool:
+    """If user was asked for a flow name (Save Flow), handle name or cancel. Return True if handled."""
+    if not cl.user_session.get(PENDING_SAVE_FLOW_KEY):
+        return False
+    content = (message.content or "").strip()
+    cl.user_session.set(PENDING_SAVE_FLOW_KEY, False)
+    if content.lower() == "cancel":
+        await cl.Message(content="Save flow cancelled.").send()
+        return True
+    filename = _sanitize_flow_filename(content)
+    dir_path = Path(_get_flow_directory())
+    dir_path.mkdir(parents=True, exist_ok=True)
+    save_path = str(dir_path / filename)
+    try:
+        client = _get_node_red_client()
+        flows = await _get_flows(client)
+        _write_flow_file(flows, save_path)
+        cl.user_session.set("last_loaded_flow_path", save_path)
+        await cl.Message(content=f"Flow saved to `{save_path}`.").send()
+    except httpx.ConnectError:
+        await cl.Message(
+            content=f"**Connection error** — Cannot reach Node-RED. Ensure it's running at `{NODE_RED_URL}`."
+        ).send()
+    except httpx.HTTPStatusError as e:
+        await cl.Message(
+            content=f"**API error** ({e.response.status_code}) — Enable the Node-RED Admin API in settings."
+        ).send()
+    except Exception as e:
+        await cl.Message(content=f"**Save failed** — {e!s}").send()
+    return True
+
+
+async def _handle_pending_flow_upload(message: cl.Message) -> bool:
+    """If user was asked to upload a flow, handle attachment or cancel. Return True if handled."""
+    if not cl.user_session.get(PENDING_LOAD_FLOW_KEY):
+        return False
+    content = (message.content or "").strip()
+    cl.user_session.set(PENDING_LOAD_FLOW_KEY, False)
+    if content.lower() == "cancel":
+        await cl.Message(content="Load flow cancelled.").send()
+        return True
+    path_and_name = _first_flow_file_path_and_name(message)
+    if not path_and_name:
+        cl.user_session.set(PENDING_LOAD_FLOW_KEY, True)
+        await cl.Message(
+            content="Please attach a flow JSON file (use the paperclip icon), or type **cancel** to abort."
+        ).send()
+        return True
+    file_path, original_filename = path_and_name
+    if cl.user_session.get(LOAD_FLOW_IN_PROGRESS_KEY):
+        await cl.Message(content="Flow load already in progress. Please wait…").send()
+        return True
+    cl.user_session.set(LOAD_FLOW_IN_PROGRESS_KEY, True)
+    try:
+        await cl.Message(content="**Preprocessing started.**").send()
+        flows = _read_flows_from_path(file_path)
+        if not flows:
+            await cl.Message(
+                content="Attached file is empty or not a valid flow JSON. Please attach a flow JSON file or type **cancel**."
+            ).send()
+            return True
+        if flow_needs_conversion(flows):
+            flows = await asyncio.to_thread(convert_unknown_nodes_to_designer, flows)
+        else:
+            await asyncio.to_thread(ensure_flow_order, flows)
+        await cl.Message(content="**Preprocessing completed.**").send()
+        # Save preprocessed flow to designer_flows with the same filename as uploaded
+        dir_path = Path(_get_flow_directory())
+        dir_path.mkdir(parents=True, exist_ok=True)
+        save_filename = _sanitize_flow_filename(original_filename)
+        save_path = str(dir_path / save_filename)
+        _write_flow_file(flows, save_path)
+        await _load_flows_then_send(flows, "uploaded file", save_path=save_path)
+    except httpx.ConnectError:
+        await cl.Message(
+            content=f"**Connection error** — Cannot reach Node-RED. Ensure it's running at `{NODE_RED_URL}`."
+        ).send()
+    except httpx.HTTPStatusError as e:
+        await cl.Message(
+            content=f"**API error** ({e.response.status_code}) — Enable the Node-RED Admin API in settings."
+        ).send()
+    except Exception as e:
+        await cl.Message(content=f"**Load failed** — {e!s}").send()
+    finally:
+        cl.user_session.set(LOAD_FLOW_IN_PROGRESS_KEY, False)
+    return True
+
+
 @cl.on_message
 async def on_message(message: cl.Message):
+    content = (message.content or "").strip()
+
+    if await _handle_pending_save_flow(message):
+        return
+    if await _handle_pending_flow_upload(message):
+        return
+
+    # When user invokes the Flow Tools command, show the flow tool choice (implement the command)
+    if getattr(message, "command", None) == FLOW_COMMAND_ID:
+        await cl.Message(
+            content="**Flow Tools** — choose an action:",
+            actions=_flow_tool_actions_choice(),
+        ).send()
+        return
+
+    if not content:
+        await cl.Message(
+            content="Please type a message before sending. Empty messages cannot be processed."
+        ).send()
+        return
+
     run_config = RunnableConfig(
         configurable={"thread_id": cl.context.session.id},
         callbacks=[],
     )
     res = await _agent.ainvoke(
-        {"messages": [{"role": "user", "content": message.content}]},
+        {"messages": [{"role": "user", "content": content}]},
         run_config,
     )
     await cl.Message(content=res["messages"][-1].text).send()
@@ -363,6 +540,27 @@ async def on_flow_working_on_existing(_action: cl.Action):
         content="**Working on existing** — choose an action:",
         actions=_flow_tool_actions_row2(),
     ).send()
+
+
+@cl.action_callback("flow_clear")
+async def on_flow_clear(_action: cl.Action):
+    """Delete all files inside the designer flows folder (same folder where flows are saved)."""
+    dir_path = Path(_get_flow_directory())
+    if not dir_path.is_dir():
+        await cl.Message(
+            content=f"Designer flows folder does not exist: `{dir_path}`. Nothing to clear."
+        ).send()
+        return
+    try:
+        files_to_remove = [f for f in dir_path.iterdir() if f.is_file()]
+        for f in files_to_remove:
+            f.unlink()
+        deleted = len(files_to_remove)
+        await cl.Message(
+            content=f"**Clear completed.** Deleted {deleted} file(s) from `{dir_path}`."
+        ).send()
+    except OSError as e:
+        await cl.Message(content=f"Cannot clear folder: {e!s}").send()
 
 
 @cl.action_callback("open_flows")
@@ -416,7 +614,7 @@ async def on_list_designer_flows(_action: cl.Action):
         for f in json_files
     ]
     await cl.Message(
-        content=f"**Flows in `{dir_path}`** — click a flow to load it into Flow and open:",
+        content="**Saved Flow Listed Below** — click a flow to load it",
         actions=file_actions,
     ).send()
 
@@ -433,19 +631,16 @@ async def on_load_flow_from_path(action: cl.Action):
         return
     cl.user_session.set(LOAD_FLOW_IN_PROGRESS_KEY, True)
     try:
-        await cl.Message(content="Reading flow file…").send()
+        await cl.Message(content="**Preprocessing started.**").send()
         flows = _read_flows_from_path(path)
         if not flows:
             await cl.Message(content=f"File is empty or not a valid flow JSON: `{path}`").send()
             return
         if flow_needs_conversion(flows):
-            await cl.Message(content="Converting custom nodes to placeholders…").send()
-            flows = convert_unknown_nodes_to_designer(flows)
+            flows = await asyncio.to_thread(convert_unknown_nodes_to_designer, flows)
         else:
-            ensure_flow_order(flows)
-        await cl.Message(
-            content="Loading flow into Node-RED… (wait for the next message, then open the link; refresh the Node-RED tab if the canvas is blank)"
-        ).send()
+            await asyncio.to_thread(ensure_flow_order, flows)
+        await cl.Message(content="**Preprocessing completed.**").send()
         await _load_flows_then_send(flows, f"`{path}`", save_path=path)
     except httpx.ConnectError:
         await cl.Message(

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orch Flow Studio — AI-Powered Backend & Orchestration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orch-white: #ffffff;
+      --orch-blue-50: #f0f4fc;
+      --orch-blue-100: #e2eaf8;
+      --orch-blue-200: #c5d5f1;
+      --orch-blue-300: #9bb8e8;
+      --orch-blue-400: #6b94db;
+      --orch-blue-500: #4a73c9;
+      --orch-blue-600: #3859a8;
+      --orch-blue-700: #2f4a8a;
+      --orch-blue-800: #2b3f72;
+      --orch-blue-900: #28385f;
+      --orch-dark-blue: #0f172a;
+      --orch-dark-blue-2: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--orch-white);
+      color: var(--orch-dark-blue);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-dark {
+      background: linear-gradient(
+        135deg,
+        var(--orch-dark-blue) 0%,
+        #132036 25%,
+        var(--orch-dark-blue-2) 50%,
+        #223a5c 75%,
+        var(--orch-blue-900) 100%
+      );
+      padding: 2.5rem 1.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+    }
+
+    .hero-illus {
+      width: 100%;
+      max-width: 520px;
+      height: auto;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-illus { animation: none; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .hero-illus svg {
+      width: 100%;
+      height: auto;
+      animation: illusFade 1s ease-out both;
+    }
+
+    .hero-illus .flow-line {
+      stroke-dasharray: 70;
+      stroke-dashoffset: 70;
+      animation: flowLine 2s ease-out 0.5s forwards;
+    }
+
+    .hero-illus .node-pulse {
+      animation: nodePulse 2s ease-in-out 1s infinite;
+    }
+
+    .hero-illus .node-pulse-delay {
+      animation: nodePulse 2s ease-in-out 1.4s infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-illus .flow-line { animation: none; stroke-dashoffset: 0; }
+      .hero-illus .node-pulse,
+      .hero-illus .node-pulse-delay,
+      .hero-illus .sparkle { animation: none; }
+    }
+
+    @keyframes flowLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes nodePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .hero-illus .sparkle {
+      animation: sparkle 2s ease-in-out infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes illusFade {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .workflow-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      padding: 0 1rem;
+    }
+
+    .workflow-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--orch-blue-700);
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out both;
+    }
+
+    .workflow-step:nth-child(1) { animation-delay: 4s; }
+    .workflow-step:nth-child(2) { animation-delay: 4.2s; }
+    .workflow-step:nth-child(3) { animation-delay: 4.4s; }
+    .workflow-step:nth-child(4) { animation-delay: 4.6s; }
+
+    .workflow-step svg {
+      flex-shrink: 0;
+      color: var(--orch-blue-600);
+    }
+
+    .workflow-arrow {
+      color: var(--orch-blue-300);
+      opacity: 0.6;
+      animation: fadeInUp 0.5s ease-out 4.1s both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .workflow-step { animation: fadeInUp 0.5s ease-out both; animation-delay: 0s; }
+      .workflow-arrow { animation: fadeInUp 0.5s ease-out both; animation-delay: 0s; }
+    }
+
+    .hero-light {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(
+        180deg,
+        var(--orch-white) 0%,
+        #f5f9fe 25%,
+        var(--orch-blue-50) 50%,
+        #e8eff9 75%,
+        var(--orch-blue-100) 100%
+      );
+      position: relative;
+    }
+
+    .hero-light::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 89, 168, 0.1), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(56, 89, 168, 0.06), transparent),
+        radial-gradient(ellipse 60% 40% at 0% 80%, rgba(56, 89, 168, 0.06), transparent);
+      pointer-events: none;
+      animation: bgPulse 14s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .title-straddle {
+      background: var(--orch-blue-50);
+      padding: 0.4rem 1rem 0.6rem;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      animation: fadeIn 0.6s ease-out both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .tool-name {
+      font-size: clamp(2.25rem, 7vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin: 0;
+      display: inline-block;
+      background: linear-gradient(
+        90deg,
+        var(--orch-blue-700) 0%,
+        var(--orch-blue-700) 50%,
+        var(--orch-dark-blue) 50%,
+        var(--orch-dark-blue) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 800px;
+      padding: 1.5rem 1rem 2rem;
+    }
+
+    .tagline-wrap {
+      margin-bottom: 2rem;
+      min-height: 3.2em;
+      overflow: hidden;
+    }
+
+    .hero .tagline {
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: var(--orch-blue-800);
+      line-height: 1.6;
+      margin: 0 0 0.35rem;
+      font-weight: 500;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--orch-blue-500);
+      width: 0;
+      animation: typewriter 3.2s steps(52) 0.6s forwards, blink 0.6s step-end 0.6s infinite;
+      max-width: 100%;
+    }
+
+    .hero .tagline-sub {
+      font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+      color: var(--orch-blue-600);
+      line-height: 1.5;
+      margin: 0;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease-out 3.6s both;
+    }
+
+    @keyframes typewriter {
+      from { width: 0; }
+      96% { width: 52ch; border-right-color: var(--orch-blue-500); }
+      to { width: 52ch; border-right-color: transparent; }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+
+    @media (max-width: 520px) {
+      .hero .tagline { animation-duration: 2.6s; animation-timing-function: steps(48); }
+      @keyframes typewriter {
+        from { width: 0; }
+        96% { width: 48ch; border-right-color: var(--orch-blue-500); }
+        to { width: 48ch; border-right-color: transparent; }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero .tagline {
+        animation: none;
+        width: 52ch;
+        border-right: none;
+      }
+      .hero .tagline-sub { animation: fadeInUp 0.5s ease-out both; }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-wrap {
+      animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+
+    .btn-try {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--orch-dark-blue);
+      color: var(--orch-white) !important;
+      font-weight: 600;
+      font-size: 1.05rem;
+      padding: 0.85rem 2rem;
+      border-radius: 0.5rem;
+      border: none;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+    }
+
+    .btn-try:hover {
+      background: var(--orch-blue-800);
+      color: var(--orch-white) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.3);
+    }
+
+    .btn-try:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <main class="hero">
+    <section class="hero-dark" aria-hidden="true">
+      <div class="hero-illus">
+        <svg viewBox="0 0 480 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Top row: orchestration flow -->
+          <path class="flow-line" d="M98 42 H165" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+          <path class="flow-line" d="M255 42 H322" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+          <circle class="node-pulse" cx="70" cy="42" r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <circle class="node-pulse node-pulse-delay" cx="200" cy="42" r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <circle class="node-pulse" cx="330" cy="42" r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <!-- Arrow heads -->
+          <path d="M162 42 L168 38 L168 46 Z" fill="rgba(255,255,255,0.5)"/>
+          <path d="M319 42 L325 38 L325 46 Z" fill="rgba(255,255,255,0.5)"/>
+          <!-- Pipeline steps labels -->
+          <text x="70" y="72" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10" font-family="system-ui">Input</text>
+          <text x="200" y="72" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10" font-family="system-ui">Process</text>
+          <text x="330" y="72" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10" font-family="system-ui">Output</text>
+          <!-- Code / LLD block -->
+          <rect x="40" y="88" width="400" height="68" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+          <line x1="58" y1="108" x2="220" y2="108" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="58" y1="122" x2="320" y2="122" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="58" y1="136" x2="180" y2="136" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" stroke-linecap="round"/>
+          <rect x="48" y="103" width="5" height="5" rx="1" fill="rgba(255,255,255,0.45)"/>
+          <rect x="48" y="117" width="5" height="5" rx="1" fill="rgba(255,255,255,0.35)"/>
+          <rect x="48" y="131" width="5" height="5" rx="1" fill="rgba(255,255,255,0.28)"/>
+          <!-- AI sparkle -->
+          <path class="sparkle" d="M200 18 L202 24 L208 26 L202 28 L200 34 L198 28 L192 26 L198 24 Z" fill="rgba(255,255,255,0.6)"/>
+        </svg>
+      </div>
+    </section>
+    <div class="title-straddle">
+      <h1 class="tool-name">Orch Flow Studio</h1>
+    </div>
+    <section class="hero-light">
+      <div class="hero-content px-3">
+        <div class="tagline-wrap">
+          <p class="tagline">AI generates enterprise-ready backend and orchestration,</p>
+          <p class="tagline-sub">enabling visual customization without compromising architectural standards.</p>
+        </div>
+        <div class="btn-wrap">
+          <a href="http://localhost:2337/" class="btn btn-try" target="_blank" rel="noopener noreferrer">
+            Try it out
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+        <div class="workflow-strip" aria-hidden="true">
+          <span class="workflow-step">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Design
+          </span>
+          <span class="workflow-arrow" aria-hidden="true">→</span>
+          <span class="workflow-step">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Build
+          </span>
+          <span class="workflow-arrow" aria-hidden="true">→</span>
+          <span class="workflow-step">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Orchestrate
+          </span>
+          <span class="workflow-arrow" aria-hidden="true">→</span>
+          <span class="workflow-step">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Deploy
+          </span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

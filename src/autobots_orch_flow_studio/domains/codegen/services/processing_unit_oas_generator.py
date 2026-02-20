@@ -35,27 +35,29 @@ def _compose_user_message(schema: dict, kb_path: str) -> str:
 
 
 def _fetch_models_list(filename: str) -> list[str]:
-    """Fetch the list of model names from the input JSON file.
+    """Fetch the list of processing unit names from the nodes in 4-behaviours.json.
 
-    Reads 1-models.json from data/<filename>/json/ and returns the top-level
-    keys as a list of strings.
+    Reads 4-behaviours.json and returns one record per node in the "nodes" array,
+    using nodeName (or behaviourName) as the processing unit name.
 
     Args:
-        filename: Directory name under INPUT_DATA_BASE_PATH (e.g. MER-12345---Party-Feature).
+        filename: Directory name under data workspace (e.g. MER-12345---Party-Feature).
 
     Returns:
-        List of first-level keys from the JSON (model names).
+        List of "file: <filename>, model: <nodeName>" strings for each node.
     """
-    models_path = Path(
-        "/Users/kishankumar/Documents/Docs/hackathon/autobots-multi-repo-ws/orch-flow-studio/docs/", filename, "json", "4-behaviours.json"
+    behaviours_path = Path(
+        "/Users/saurabh/Documents/server/orch-ai-studio/data", filename, "json", "4-behaviours.json"
     )
-    with models_path.open(encoding="utf-8") as f:
+    with behaviours_path.open(encoding="utf-8") as f:
         data = json.load(f)
-    logger.info(f"Models list: {data}")
+    nodes = data.get("nodes") or []
     records = []
-    for model in data.keys():
-        text = f"file: {filename}, model: {model}"
-        records.append(text)
+    for node in nodes:
+        name = node.get("nodeName") or node.get("behaviourName")
+        if name:
+            records.append(f"file: {filename}, model: {name}")
+    logger.info(f"Processing unit records for {filename}: {records}")
     return records
 
 
@@ -136,13 +138,13 @@ def build_model_oas(
     """
 
     # --- Step 1: Get Node KG Schema ----------------------------------------
-    logger.info("Step 1 - Retrieving Node KG Schema for agent 'processing_unit_oas_generator'")
-    meta = AgentMeta.instance()
-    schema: dict | None = meta.schema_map.get("processing_unit_oas_generator")
-    if schema is None:
-        raise ValueError("Failed to retrieve schema for agent 'processing_unit_oas_generator'")
+    # logger.info("Step 1 - Retrieving Node KG Schema for agent 'processing_unit_oas_generator'")
+    # meta = AgentMeta.instance()
+    # schema: dict | None = meta.schema_map.get("processing_unit_oas_generator")
+    # if schema is None:
+    #     raise ValueError("Failed to retrieve schema for agent 'processing_unit_oas_generator'")
 
-    logger.info("Schema retrieved successfully (%d chars)", len(schema))
+    # logger.info("Schema retrieved successfully (%d chars)", len(schema))
 
     # --- Step 2: Invoke schema_processor agent -----------------------------
     agent_name = "processing_unit_oas_generator"

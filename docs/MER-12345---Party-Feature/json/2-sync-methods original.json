@@ -1,0 +1,9 @@
+[
+  {
+    "endpoint": "fetchEventData",
+    "modelName": "EventLogInq",
+    "input": [],
+    "output": "EventLog",
+    "business description": "<business description>"
+  }
+]
